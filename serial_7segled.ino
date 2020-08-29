@@ -97,42 +97,13 @@ void dispInit() {
 // 指定の数字を桁ごとに表示
 // "-"はランダムの数値を表示する
 void dispNumbers(String digit_1_char, String digit_10_char, String digit_100_char, String digit_1000_char) {
-  // 1の桁
-  digitalWrite(digit_10, 0);
-  digitalWrite(digit_100, 0);
-  digitalWrite(digit_1000, 0);
-  digitalWrite(digit_1, 1);
   digit_1_num = convertNum(digit_1_char, digit_1_num, count);
-  numPrint(digit_1_num);
-  delay(del);
-
-  // 10の桁
-  digitalWrite(digit_1, 0);
-  digitalWrite(digit_100, 0);
-  digitalWrite(digit_1000, 0);
-  digitalWrite(digit_10, 1);
   digit_10_num = convertNum(digit_10_char, digit_10_num, count);
-  numPrint(digit_10_num);
-  delay(del);
-
-  // 100の桁
-  digitalWrite(digit_1, 0);
-  digitalWrite(digit_10, 0);
-  digitalWrite(digit_1000, 0);
-  digitalWrite(digit_100, 1);
   digit_100_num = convertNum(digit_100_char, digit_100_num, count);
-  numPrint(digit_100_num);
-  delay(del);
-
-  // 1000の桁
-  digitalWrite(digit_1, 0);
-  digitalWrite(digit_10, 0);
-  digitalWrite(digit_100, 0);
-  digitalWrite(digit_1000, 1);
   digit_1000_num = convertNum(digit_1000_char, digit_1000_num, count);
-  numPrint(digit_1000_num);
-  delay(del);
 
+  dispLed(digit_1_num, digit_10_num, digit_100_num, digit_1000_num);
+  
   count = (count + 1) % 5;
 }
 
@@ -144,13 +115,19 @@ void dispRandom() {
     digit_100_num = random(9);
     digit_1000_num = random(9);
   }
+  dispLed(digit_1_num, digit_10_num, digit_100_num, digit_1000_num);
+  
+  count = (count + 1) % 5;
+}
 
+// LEDの点灯
+void dispLed(int num_1, int num_10, int num_100, int num_1000) {
   // 1の桁
   digitalWrite(digit_10, 0);
   digitalWrite(digit_100, 0);
   digitalWrite(digit_1000, 0);
   digitalWrite(digit_1, 1);
-  numPrint(digit_1_num);
+  numPrint(num_1);
   delay(del);
 
   // 10の桁
@@ -158,7 +135,7 @@ void dispRandom() {
   digitalWrite(digit_100, 0);
   digitalWrite(digit_1000, 0);
   digitalWrite(digit_10, 1);
-  numPrint(digit_10_num);
+  numPrint(num_10);
   delay(del);
 
   // 100の桁
@@ -166,7 +143,7 @@ void dispRandom() {
   digitalWrite(digit_10, 0);
   digitalWrite(digit_1000, 0);
   digitalWrite(digit_100, 1);
-  numPrint(digit_100_num);
+  numPrint(num_100);
   delay(del);
 
   // 1000の桁
@@ -174,22 +151,23 @@ void dispRandom() {
   digitalWrite(digit_10, 0);
   digitalWrite(digit_100, 0);
   digitalWrite(digit_1000, 1);
-  numPrint(digit_1000_num);
+  numPrint(num_1000);
   delay(del);
-
-  count = (count + 1) % 5;
 }
 
 // 桁ごとのシリアル送信値から表示する数字への変換
 int convertNum(String s, int now_num, int c) {
-  int n = now_num;
+  int n = 0;
   // -はランダム表示
   if (s == "-") {
-    // タイミングがあったときだけランダム値に
+    // タイミングがあったときだけランダム値を変更
     if (c == 0) {
       n = random(9);
+    // そうでない場合は現在の数字をそのまま出す
+    } else {
+      n = now_num;
     }
-  // それ以外は数字が来る
+  // -以外は数字が来る
   } else {
     n = s.toInt();
     if (n < 0 || n > 9) {
