@@ -1,4 +1,5 @@
 import serial
+from pygame import mixer
 import RPi.GPIO as GPIO
 import random
 import time
@@ -27,6 +28,19 @@ def getPrice():
     return int(digit_list[0]*seed)
 
 def main():
+    # 音声ファイル読み込み
+    mixer.pre_init(44100, -16, 2, 4096)
+    mixer.init()
+    se1 = mixer.Sound('se/1.wav')
+    se10 = mixer.Sound('se/10.wav')
+    se100 = mixer.Sound('se/100.wav')
+    se1000 = mixer.Sound('se/1000.wav')
+    se10000 = mixer.Sound('se/10000.wav')
+    se100000 = mixer.Sound('se/100000.wav')
+    se1000000 = mixer.Sound('se/1000000.wav')
+    se10000000 = mixer.Sound('se/10000000.wav')
+    se_list = [se1, se10, se100, se1000, se10000, se100000, se1000000, se10000000]
+
     # BCMの番号でピンアサイン
     # $ gpio readall で確認出来る
     GPIO.setmode(GPIO.BCM)
@@ -55,14 +69,16 @@ def main():
                 price = str(getPrice())
                 print("Price:"+price)
                 led_pattern = calc(price)
-                for p in led_pattern:
-                    time.sleep(1)
+                for i, p in enumerate(led_pattern):
                     ser_l.write((p[0]+";").encode())
                     ser_r.write((p[1]+";").encode())
                     #print("left:"+p[0]+";")
                     #print("right:"+p[1]+";")
+                    if 0 < i <= len(price):
+                        se_list[i-1].play()
+                    time.sleep(1)
                 else:
-                    time.sleep(5)
+                    time.sleep(4)
                     ser_l.write(b"b;")
                     ser_r.write(b"b;")
                     time.sleep(0.5)
