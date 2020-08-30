@@ -3,18 +3,18 @@
 #define STATE_NUMBER 2
 
 // ピンと光る7セグの対応
-// 右下：6 左下：7 下：8 中央：9 左上：10 右上：11 上：12
+// 左下：6 中央：7 上：8 右上：9 左上：10 下：11 右下：12
 boolean num_array[10][7] = {
-  {0, 0, 0, 1, 0, 0, 0}, // 0ok
-  {0, 1, 1, 1, 1, 0, 1}, // 1ok
-  {1, 0, 0, 0, 1, 0, 0}, // 2ok
-  {0, 1, 0, 0, 1, 0, 0}, // 3ok
-  {0, 1, 1, 0, 0, 0, 1}, // 4ok
-  {0, 1, 0, 0, 0, 1, 0}, // 5ok
-  {0, 0, 0, 0, 0, 1, 0}, // 6ok
-  {0, 1, 1, 1, 0, 0, 0}, // 7ok
-  {0, 0, 0, 0, 0, 0, 0}, // 8ok
-  {0, 1, 0, 0, 0, 0, 0} // 9ok
+  {0, 1, 0, 0, 0, 0, 0}, // 0
+  {1, 1, 1, 0, 1, 1, 0}, // 1
+  {0, 0, 0, 0, 1, 0, 1}, // 2
+  {1, 0, 0, 0, 1, 0, 0}, // 3
+  {1, 0, 1, 0, 0, 1, 0}, // 4
+  {1, 0, 0, 1, 0, 0, 0}, // 5
+  {0, 0, 0, 1, 0, 0, 0}, // 6
+  {1, 1, 0, 0, 1, 1, 0}, // 7
+  {0, 0, 0, 0, 0, 0, 0}, // 8
+  {1, 0, 0, 0, 0, 0, 0}  // 9
 };
 
 int digit_1 = 5; // 1の桁
@@ -85,17 +85,9 @@ void loop() {
   }
 }
 
-// 全LED消灯
-void dispInit() {
-  digitalWrite(digit_1, 0);
-  digitalWrite(digit_10, 0);
-  digitalWrite(digit_100, 0);
-  digitalWrite(digit_1000, 0);
-  delay(100);
-}
-
 // 指定の数字を桁ごとに表示
 // "-"はランダムの数値を表示する
+// "*"は消灯
 void dispNumbers(String digit_1_char, String digit_10_char, String digit_100_char, String digit_1000_char) {
   digit_1_num = convertNum(digit_1_char, digit_1_num, count);
   digit_10_num = convertNum(digit_10_char, digit_10_num, count);
@@ -103,20 +95,20 @@ void dispNumbers(String digit_1_char, String digit_10_char, String digit_100_cha
   digit_1000_num = convertNum(digit_1000_char, digit_1000_num, count);
 
   dispLed(digit_1_num, digit_10_num, digit_100_num, digit_1000_num);
-  
+
   count = (count + 1) % 5;
+}
+
+// 全LED消灯
+void dispInit() {
+  dispNumbers("*", "*", "*", "*");
+  delay(100);
 }
 
 // 全LEDを0～9の中からランダムで表示
 void dispRandom() {
-  if (count == 0) {
-    digit_1_num = random(9);
-    digit_10_num = random(9);
-    digit_100_num = random(9);
-    digit_1000_num = random(9);
-  }
-  dispLed(digit_1_num, digit_10_num, digit_100_num, digit_1000_num);
-  
+  dispNumbers("-", "-", "-", "-");
+
   count = (count + 1) % 5;
 }
 
@@ -126,52 +118,71 @@ void dispLed(int num_1, int num_10, int num_100, int num_1000) {
   digitalWrite(digit_10, 0);
   digitalWrite(digit_100, 0);
   digitalWrite(digit_1000, 0);
-  digitalWrite(digit_1, 1);
-  numPrint(num_1);
+  if (num_1 == 99) {
+    digitalWrite(digit_1, 0);
+  } else {
+    digitalWrite(digit_1, 1);
+    numPrint(num_1);
+  }
   delay(del);
 
   // 10の桁
   digitalWrite(digit_1, 0);
   digitalWrite(digit_100, 0);
   digitalWrite(digit_1000, 0);
-  digitalWrite(digit_10, 1);
-  numPrint(num_10);
+  if (num_10 == 99) {
+    digitalWrite(digit_10, 0);
+  } else {
+    digitalWrite(digit_10, 1);
+    numPrint(num_10);
+  }
   delay(del);
 
   // 100の桁
   digitalWrite(digit_1, 0);
   digitalWrite(digit_10, 0);
   digitalWrite(digit_1000, 0);
-  digitalWrite(digit_100, 1);
-  numPrint(num_100);
+  if (num_100 == 99) {
+    digitalWrite(digit_100, 0);
+  } else {
+    digitalWrite(digit_100, 1);
+    numPrint(num_100);
+  }
   delay(del);
 
   // 1000の桁
   digitalWrite(digit_1, 0);
   digitalWrite(digit_10, 0);
   digitalWrite(digit_100, 0);
-  digitalWrite(digit_1000, 1);
-  numPrint(num_1000);
+  if (num_1000 == 99) {
+    digitalWrite(digit_1000, 0);
+  } else {
+    digitalWrite(digit_1000, 1);
+    numPrint(num_1000);
+  }
   delay(del);
 }
 
 // 桁ごとのシリアル送信値から表示する数字への変換
+// 消灯時は99を返す
 int convertNum(String s, int now_num, int c) {
-  int n = 0;
+  int n = 99;
   // -はランダム表示
   if (s == "-") {
     // タイミングがあったときだけランダム値を変更
     if (c == 0) {
       n = random(9);
-    // そうでない場合は現在の数字をそのまま出す
+      // そうでない場合は現在の数字をそのまま出す
     } else {
       n = now_num;
     }
-  // -以外は数字が来る
+  } else if (s == "*") {
+    n = 99;
+    // -, *以外は数字が来る
   } else {
     n = s.toInt();
     if (n < 0 || n > 9) {
-      n = 0;
+      n = 99;
     }
   }
   return n;
