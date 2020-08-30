@@ -23,7 +23,7 @@ def calc(in_val):
 
 def getPrice():
     seed = round(random.uniform(1.0, 9.9), 1)
-    digit_list = [1000, 10000, 10000, 10000, 100000, 100000, 100000, 100000, 100000, 1000000, 1000000, 1000000, 1000000, 10000000]
+    digit_list = [100, 1000, 1000, 10000, 10000, 10000, 10000, 10000, 100000, 100000, 1000000, 1000000, 10000000]
     random.shuffle(digit_list)
     return int(digit_list[0]*seed)
 
@@ -31,6 +31,7 @@ def main():
     # 音声ファイル読み込み
     mixer.pre_init(44100, -16, 2, 4096)
     mixer.init()
+    mixer.music.load('se/bgm.wav')
     se1 = mixer.Sound('se/1.wav')
     se10 = mixer.Sound('se/10.wav')
     se100 = mixer.Sound('se/100.wav')
@@ -62,6 +63,7 @@ def main():
             switch_val = GPIO.input(17)
             if switch_val == GPIO.HIGH and old_switch_val == GPIO.LOW:
                 print("switch on")
+                mixer.music.play(loops=-1)
                 ser_l.write(b"a;")
                 ser_r.write(b"a;")
             elif switch_val == GPIO.LOW and old_switch_val == GPIO.HIGH:
@@ -76,6 +78,8 @@ def main():
                     #print("right:"+p[1]+";")
                     if 0 < i <= len(price):
                         se_list[i-1].play()
+                    if i == len(price):
+                        mixer.music.stop()
                     time.sleep(1)
                 else:
                     time.sleep(4)
