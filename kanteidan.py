@@ -32,6 +32,8 @@ def main():
     mixer.pre_init(44100, -16, 2, 4096)
     mixer.init()
     mixer.music.load('se/bgm.wav')
+    se_laugh = mixer.Sound('se/laugh.wav')
+    se_clap = mixer.Sound('se/clap.wav')
     se1 = mixer.Sound('se/1.wav')
     se10 = mixer.Sound('se/10.wav')
     se100 = mixer.Sound('se/100.wav')
@@ -57,17 +59,15 @@ def main():
 
     switch_val = GPIO.LOW
     old_switch_val = GPIO.LOW
+    
+    mixer.music.play(loops=-1)
+    ser_l.write(b"a;")
+    ser_r.write(b"a;")
 
     try:
         while True:
             switch_val = GPIO.input(17)
             if switch_val == GPIO.HIGH and old_switch_val == GPIO.LOW:
-                print("switch on")
-                mixer.music.play(loops=-1)
-                ser_l.write(b"a;")
-                ser_r.write(b"a;")
-            elif switch_val == GPIO.LOW and old_switch_val == GPIO.HIGH:
-                print("switch off")
                 price = str(getPrice())
                 print("Price:"+price)
                 led_pattern = calc(price)
@@ -80,9 +80,14 @@ def main():
                         se_list[i-1].play()
                     if i == len(price):
                         mixer.music.stop()
+                    if i == len(led_pattern)-1:
+                        if int(price) < 50000:
+                            se_laugh.play()
+                        else:
+                            se_clap.play()
+                        time.sleep(4)
                     time.sleep(1)
                 else:
-                    time.sleep(4)
                     ser_l.write(b"b;")
                     ser_r.write(b"b;")
                     time.sleep(0.5)
