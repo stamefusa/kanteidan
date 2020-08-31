@@ -23,7 +23,7 @@ def calc(in_val):
 
 def getPrice():
     seed = round(random.uniform(1.0, 9.9), 1)
-    digit_list = [100, 1000, 1000, 10000, 10000, 10000, 10000, 10000, 100000, 100000, 1000000, 1000000, 10000000]
+    digit_list = [1000, 10000, 10000, 100000, 100000, 100000, 1000000, 1000000, 10000000]
     random.shuffle(digit_list)
     return int(digit_list[0]*seed)
 
@@ -52,8 +52,8 @@ def main():
     GPIO.setup(17, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
     # シリアルポート設定
-    ser_l = serial.Serial("/dev/ttyACM0", 9600, timeout=10)
-    ser_r = serial.Serial("/dev/ttyACM1", 9600, timeout=10)
+    ser_l = serial.Serial("/dev/ttyACM1", 9600, timeout=10)
+    ser_r = serial.Serial("/dev/ttyACM0", 9600, timeout=10)
     time.sleep(3)
     print("ready")
 
@@ -87,10 +87,14 @@ def main():
                             se_clap.play()
                         time.sleep(4)
                     time.sleep(1)
-                else:
-                    ser_l.write(b"b;")
-                    ser_r.write(b"b;")
-                    time.sleep(0.5)
+                #else:
+                #    ser_l.write(b"b;")
+                #    ser_r.write(b"b;")
+                #    time.sleep(0.5)
+            if switch_val == GPIO.LOW and old_switch_val == GPIO.HIGH:
+                mixer.music.play(loops=-1)
+                ser_l.write(b"a;")
+                ser_r.write(b"a;")
             old_switch_val = switch_val
             time.sleep(0.1)
     except KeyboardInterrupt:
